@@ -48,3 +48,15 @@ def grupuj_pandas(df):
     df['dzien'] = df['data'].dt.day_name()
     wynik = df.groupby('dzien')['wolumen'].mean().reset_index()
     return wynik
+
+def oblicz_mediane(df, kolumna):
+    """
+    Zwraca mediane dla podanej kolumny
+    """
+    return df[kolumna].median()
+
+def oblicz_odchylenie(df, kolumna):
+    """
+    Zwraca odchylenie standardowe dla kolumny
+    """
+    return df[kolumna].std()
