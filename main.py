@@ -4,7 +4,7 @@ from functools import reduce
 
 from dane_funkcje import (
     pobierz_dane, moj_generator, czy_jest_obrot, zrob_slownik,
-    suma_rekurencyjna, grupuj_pandas
+    suma_rekurencyjna, grupuj_pandas, regresja_sklearn
 )
 
 from wykresy import (
@@ -18,7 +18,7 @@ def main():
     st.title("Projekt zaliczeniowy: Analiza rynku kryptowalut na przykładzie kursu Bitcoin (BTC/USDT) z ostatnich 100 dni")
 
     st.header("1. Wstęp i dane")
-    st.write("Projekt analizuje zachowanie ceny Bitcoina na podstawie danych z API Binance.")
+    st.write("Analiza danych Bitcoina pobranych z API Binance.")
 
     dane = list(map(zrob_slownik, filter(czy_jest_obrot, moj_generator(pobierz_dane()))))
     df = pd.DataFrame(dane)
@@ -42,38 +42,47 @@ Dni spadkowe: {dni_spadkowe}
 Całkowity wolumen: {suma:.2f} BTC
 """)
 
-    st.header("3. Wykresy i analiza")
+    st.header("3. Regresja liniowa (scikit-learn)")
+
+    model = regresja_sklearn(df)
+    a = model.coef_[0]
+    b = model.intercept_
+
+    st.write(f"Model: zamknięcie = {a:.4f} * otwarcie + {b:.2f}")
+
+    st.info("Model pokazuje bardzo silną zależność między ceną otwarcia a zamknięcia.")
+
+    st.header("4. Wykresy i analiza")
 
     st.subheader("Cena BTC w czasie")
     col1, col2, col3 = st.columns([2,3,2])
     with col2:
         st.pyplot(rysuj_matplotlib(df))
-    st.info("Wyraźny spadek ceny na początku, następnie stabilizacja rynku.")
+    st.info("Silny spadek, potem stabilizacja rynku.")
 
     st.subheader("Macierz korelacji")
     col1, col2, col3 = st.columns([2,3,2])
     with col2:
         st.pyplot(rysuj_seaborn(df))
-    st.info("Silna zależność między ceną otwarcia i zamknięcia (~0.98).")
+    st.info("Silna korelacja (~0.98) między cenami.")
 
-    st.subheader("Otwarcie vs Zamknięcie")
+    st.subheader("Scatter + regresja")
     col1, col2, col3 = st.columns([2,3,2])
     with col2:
         st.plotly_chart(rysuj_plotly(df))
-    st.info("Punkty układają się liniowo – wysoka zależność.")
+    st.info("Zależność liniowa + linia regresji.")
 
-    st.subheader("Wolumen wg dni tygodnia")
+    st.subheader("Wolumen wg dni")
     df_g = grupuj_pandas(df)
     col1, col2, col3 = st.columns([1,5,1])
     with col2:
         st.altair_chart(rysuj_altair(df_g))
-    st.info("Większy wolumen w dni robocze, mniejszy w weekendy.")
+    st.info("Większy wolumen w dni robocze.")
 
-    st.header("4. Wnioski końcowe")
+    st.header("5. Wnioski końcowe")
     st.write("""
-Rynek Bitcoina w analizowanym okresie przeszedł spadek, a następnie stabilizację.
-Ceny są silnie zależne od siebie w krótkim okresie, a aktywność handlowa
-jest większa w dni robocze niż w weekendy.
+Rynek BTC przeszedł spadek i stabilizację.
+Ceny są silnie powiązane, a aktywność większa w tygodniu.
 """)
 
 
