@@ -67,6 +67,7 @@ Wolumen ma słabszy wpływ na cenę.
 Zależność liniowa między cenami. Linia regresji potwierdza silną zależność.
 """)
 
+    # 4
     st.subheader("Wolumen wg dni tygodnia")
     df_g = grupuj_pandas(df)
     col1, col2, col3 = st.columns([1,5,1])
