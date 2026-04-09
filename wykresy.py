@@ -18,7 +18,8 @@ def rysuj_seaborn(df):
     """
     fig, ax = plt.subplots(figsize=(6, 4))
     korelacja = df[['otwarcie', 'zamkniecie', 'wolumen']].corr()
-    sns.heatmap(korelacja, annot=True, cmap='viridis', ax=ax)
+    # Zmieniona paleta kolorów na 'coolwarm' (niebiesko-czerwona)
+    sns.heatmap(korelacja, annot=True, cmap='coolwarm', ax=ax)
     return fig
 
 def rysuj_plotly(df):

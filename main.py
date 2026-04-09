@@ -26,8 +26,10 @@ def main():
     lista_danych = list(zmapowane)
     df = pd.DataFrame(lista_danych)
 
-    st.write("Uzywajac paradygmatu funkcyjnego (map, filter) zamienilismy surowe dane na tabele. Oto poczatek naszej tabeli:")
-    st.dataframe(df.head())
+    st.write(f"Uzywajac paradygmatu funkcyjnego (map, filter) zamienilismy surowe dane na tabele. **Nasza tabela zawiera dokładnie {len(df)} dni!** Oto ona w calosci:")
+    
+    # Usunalem .head(), teraz Streamlit pokaze cala tabele (mozna ja przewijac)
+    st.dataframe(df)
     
     st.write("W naszej tabeli mamy nastepujace informacje:")
     st.write("- **data**: Dzien, ktorego dotyczy pomiar")
@@ -45,7 +47,7 @@ def main():
     st.write(f"**Odchylenie standardowe ceny:** {odchylenie_ceny:.2f} USD (mowi nam, jak bardzo ceny skacza wokol sredniej)")
     
     najwiekszy_wolumen = reduce(lambda a, b: a if a['wolumen'] > b['wolumen'] else b, lista_danych)
-    st.write(f"**Najwiekszy jednodniowy wolumen (obliczony funkcja reduce):** {najwiekszy_wolumen['wolumen']} sztuk")
+    st.write(f"**Najwiekszy jednodniowy wolumen (obliczony funkcja reduce):** {najwiekszy_wolumen['wolumen']:.2f} sztuk")
 
     lista_wolumenow = [element['wolumen'] for element in lista_danych]
     suma_wol = suma_rekurencyjna(lista_wolumenow)
