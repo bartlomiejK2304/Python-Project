@@ -3,28 +3,35 @@ import pandas as pd
 
 def pobierz_dane():
     """
-    Pobranie danych gieldowych btc z api
+    Pobranie danych giełdowych BTC z API (z obsługą błędów)
     """
     url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=100"
     odpowiedz = requests.get(url)
+    
+    if odpowiedz.status_code != 200:
+        raise Exception(f"Błąd API: {odpowiedz.status_code}")
+    
     return odpowiedz.json()
+
 
 def moj_generator(dane):
     """
-    Zwraca po jednym elemencie z listy
+    Generator zwracający kolejne elementy
     """
     for element in dane:
         yield element
 
+
 def czy_jest_obrot(wiersz):
     """
-    Sprawdza czy wolumen jest wiekszy niz zero
+    Sprawdza czy wolumen > 0
     """
     return float(wiersz[5]) > 0
 
+
 def zrob_slownik(wiersz):
     """
-    Zamienia liste z api na slownik
+    Zamiana listy z API na słownik
     """
     return {
         'data': pd.to_datetime(wiersz[0], unit='ms'),
@@ -33,30 +40,27 @@ def zrob_slownik(wiersz):
         'wolumen': float(wiersz[5])
     }
 
-def suma_rekurencyjna(lista):
+
+def suma_wolumenow(lista):
     """
-    Rekurencyjne dodawanie elementow listy
+    Suma wolumenów (wydajniej niż rekurencja)
     """
-    if len(lista) == 0:
-        return 0
-    return lista[0] + suma_rekurencyjna(lista[1:])
+    return sum(lista)
+
 
 def grupuj_pandas(df):
     """
-    Split apply combine w bibliotece pandas
+    Grupowanie danych (split-apply-combine)
     """
+    df = df.copy()
     df['dzien'] = df['data'].dt.day_name()
     wynik = df.groupby('dzien')['wolumen'].mean().reset_index()
     return wynik
 
+
 def oblicz_mediane(df, kolumna):
-    """
-    Zwraca mediane dla podanej kolumny
-    """
     return df[kolumna].median()
 
+
 def oblicz_odchylenie(df, kolumna):
-    """
-    Zwraca odchylenie standardowe dla kolumny
-    """
     return df[kolumna].std()

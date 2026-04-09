@@ -5,38 +5,48 @@ import altair as alt
 
 def rysuj_matplotlib(df):
     """
-    Zwykly wykres liniowy ceny zamkniecia
+    Wykres liniowy ceny zamknięcia
     """
     fig, ax = plt.subplots()
     ax.plot(df['data'], df['zamkniecie'])
+    ax.set_title("Cena zamknięcia BTC w czasie")
+    ax.set_xlabel("Data")
+    ax.set_ylabel("Cena (USD)")
     plt.xticks(rotation=45)
     return fig
 
+
 def rysuj_seaborn(df):
     """
-    Wykres korelacji do analizy zaleznosci
+    Macierz korelacji
     """
     fig, ax = plt.subplots(figsize=(6, 4))
     korelacja = df[['otwarcie', 'zamkniecie', 'wolumen']].corr()
-    # Zmieniona paleta kolorów na 'coolwarm' (niebiesko-czerwona)
     sns.heatmap(korelacja, annot=True, cmap='coolwarm', ax=ax)
     return fig
 
+
 def rysuj_plotly(df):
     """
-    Wykres punktowy zaleznosci miedzy otwarciem a zamknieciem
+    Scatter: otwarcie vs zamknięcie
     """
-    fig = px.scatter(df, x='otwarcie', y='zamkniecie', title="Zaleznosc: Otwarcie vs Zamkniecie")
+    fig = px.scatter(
+        df,
+        x='otwarcie',
+        y='zamkniecie',
+        title="Zależność: Otwarcie vs Zamknięcie"
+    )
     return fig
+
 
 def rysuj_altair(df_grupowane):
     """
-    Wykres slupkowy z dniami tygodnia
+    Wykres słupkowy – dni tygodnia
     """
     wykres = alt.Chart(df_grupowane).mark_bar().encode(
-        x=alt.X('dzien', sort=None),
-        y='wolumen'
+        x=alt.X('dzien', sort=None, title="Dzień tygodnia"),
+        y=alt.Y('wolumen', title="Średni wolumen")
     ).properties(
-        title="Sredni wolumen w poszczegolnych dniach"
+        title="Średni wolumen w dniach tygodnia"
     )
     return wykres
