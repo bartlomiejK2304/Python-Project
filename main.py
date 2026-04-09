@@ -4,7 +4,8 @@ from functools import reduce
 
 from dane_funkcje import (
     pobierz_dane, moj_generator, czy_jest_obrot, zrob_slownik,
-    suma_rekurencyjna, grupuj_pandas, oblicz_mediane, oblicz_odchylenie
+    suma_rekurencyjna, grupuj_pandas, oblicz_mediane, oblicz_odchylenie,
+    regresja_liniowa
 )
 
 from wykresy import (
@@ -13,87 +14,59 @@ from wykresy import (
 
 
 def main():
-    """
-    Główna funkcja aplikacji integrująca interfejs Streamlit.
-    """
     st.set_page_config(layout="wide")
 
-    st.title("Projekt zaliczeniowy: Analiza rynku kryptowalut na przykładzie kursu Bitcoin (BTC/USDT) z ostatnich 100 dni")
-
-    st.header("1. Wstęp i omówienie danych")
-    st.write("Celem projektu jest praktyczne wykorzystanie paradygmatu funkcyjnego w Pythonie do pobrania, przetworzenia i wizualizacji rzeczywistych danych. Analizujemy zachowanie Bitcoina na podstawie danych z API Binance.")
+    st.title("Analiza rynku BTC – projekt")
 
     surowe_dane = pobierz_dane()
-    generator = moj_generator(surowe_dane)
-    przefiltrowane = filter(czy_jest_obrot, generator)
-    zmapowane = map(zrob_slownik, przefiltrowane)
-    lista_danych = list(zmapowane)
+    dane = list(map(zrob_slownik, filter(czy_jest_obrot, moj_generator(surowe_dane))))
 
-    df = pd.DataFrame(lista_danych)
-    df.index = df.index + 1
+    df = pd.DataFrame(dane)
+    df.index += 1
 
     st.dataframe(df)
 
-    st.header("2. Statystyki i wyliczenia funkcyjne")
+    st.header("Statystyki")
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Średnia cena", f"{df['zamkniecie'].mean():.2f} USD")
-    with col2:
-        st.metric("Mediana", f"{df['zamkniecie'].median():.2f} USD")
-    with col3:
-        st.metric("Min. cena", f"{df['zamkniecie'].min():.2f} USD")
-    with col4:
-        st.metric("Max. cena", f"{df['zamkniecie'].max():.2f} USD")
+    st.write(f"Średnia: {df['zamkniecie'].mean():.2f}")
+    st.write(f"Mediana: {df['zamkniecie'].median():.2f}")
 
-    st.write("---")
+    dni_wzrostowe = len(list(filter(lambda x: x['zmiana_ceny'] > 0, dane)))
+    dni_spadkowe = len(dane) - dni_wzrostowe
 
-    dni_wzrostowe = list(filter(lambda x: x['zmiana_ceny'] > 0, lista_danych))
-    dni_spadkowe = list(filter(lambda x: x['zmiana_ceny'] <= 0, lista_danych))
+    st.write(f"Wzrostowe: {dni_wzrostowe}, spadkowe: {dni_spadkowe}")
 
-    st.write(f"**Analiza zachowania ceny:** {len(dni_wzrostowe)} dni wzrostowych i {len(dni_spadkowe)} spadkowych.")
+    suma = suma_rekurencyjna([x['wolumen'] for x in dane])
+    st.write(f"Suma wolumenu: {suma:.2f}")
 
-    najwiekszy = reduce(
-        lambda a, b: a if a['wolumen'] > b['wolumen'] else b,
-        lista_danych
-    )
-    st.write(f"**Największy wolumen:** {najwiekszy['wolumen']:.2f} BTC")
+    # 🔥 REGRESJA
+    st.header("Regresja liniowa")
 
-    suma = suma_rekurencyjna([x['wolumen'] for x in lista_danych])
-    st.write(f"**Całkowity wolumen:** {suma:.2f} BTC")
+    a, b = regresja_liniowa(df)
+    st.write(f"y = {a:.4f}x + {b:.2f}")
 
-    st.header("3. Analiza graficzna i wnioski")
+    # 📊 WYKRESY
 
-    # 1️⃣ mniejszy
-    st.subheader("3.1. Zmiana ceny w czasie (Matplotlib)")
-    col1, col2, col3 = st.columns([2, 3, 2])
+    st.subheader("Cena")
+    col1, col2, col3 = st.columns([2,3,2])
     with col2:
         st.pyplot(rysuj_matplotlib(df))
-    st.info("Widoczny trend spadkowy, a następnie stabilizacja rynku (konsolidacja).")
 
-    # 2️⃣ mniejszy
-    st.subheader("3.2. Macierz korelacji (Seaborn)")
-    col1, col2, col3 = st.columns([2, 3, 2])
+    st.subheader("Korelacja")
+    col1, col2, col3 = st.columns([2,3,2])
     with col2:
         st.pyplot(rysuj_seaborn(df))
-    st.info("Silna korelacja między ceną otwarcia i zamknięcia (~0.98).")
 
-    # 3️⃣ mniejszy
-    st.subheader("3.3. Otwarcie vs Zamknięcie (Plotly)")
-    col1, col2, col3 = st.columns([2, 3, 2])
+    st.subheader("Scatter + regresja")
+    col1, col2, col3 = st.columns([2,3,2])
     with col2:
-        st.plotly_chart(rysuj_plotly(df), use_container_width=False)
-    st.info("Silna zależność liniowa – punkty układają się wzdłuż prostej.")
+        st.plotly_chart(rysuj_plotly(df))
 
-    # 🔥 4️⃣ SZERSZY
-    st.subheader("3.4. Wolumen wg dni tygodnia (Altair)")
-    df_grup = grupuj_pandas(df)
-
-    col1, col2, col3 = st.columns([1, 5, 1])
+    st.subheader("Wolumen dni")
+    df_g = grupuj_pandas(df)
+    col1, col2, col3 = st.columns([1,5,1])
     with col2:
-        st.altair_chart(rysuj_altair(df_grup), use_container_width=True)
-
-    st.info("Największa aktywność w dni robocze, niższa w weekendy.")
+        st.altair_chart(rysuj_altair(df_g))
 
 
 if __name__ == "__main__":
