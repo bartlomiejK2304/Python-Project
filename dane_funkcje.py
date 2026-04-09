@@ -50,11 +50,32 @@ def suma_wolumenow(lista):
 
 def grupuj_pandas(df):
     """
-    Grupowanie danych (split-apply-combine)
+    Grupowanie danych (dni tygodnia po polsku)
     """
     df = df.copy()
-    df['dzien'] = df['data'].dt.day_name()
+
+    dni_map = {
+        'Monday': 'Poniedziałek',
+        'Tuesday': 'Wtorek',
+        'Wednesday': 'Środa',
+        'Thursday': 'Czwartek',
+        'Friday': 'Piątek',
+        'Saturday': 'Sobota',
+        'Sunday': 'Niedziela'
+    }
+
+    df['dzien'] = df['data'].dt.day_name().map(dni_map)
+
     wynik = df.groupby('dzien')['wolumen'].mean().reset_index()
+
+    kolejnosc = [
+        'Poniedziałek', 'Wtorek', 'Środa',
+        'Czwartek', 'Piątek', 'Sobota', 'Niedziela'
+    ]
+
+    wynik['dzien'] = pd.Categorical(wynik['dzien'], categories=kolejnosc, ordered=True)
+    wynik = wynik.sort_values('dzien')
+
     return wynik
 
 
