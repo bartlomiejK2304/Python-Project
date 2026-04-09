@@ -72,22 +72,3 @@ def oblicz_mediane(df, kolumna):
 
 def oblicz_odchylenie(df, kolumna):
     return df[kolumna].std()
-
-
-# 🔥 REGRESJA (bez sklearn)
-def regresja_liniowa(df):
-    x = list(df['otwarcie'])
-    y = list(df['zamkniecie'])
-
-    n = len(x)
-
-    srednia_x = sum(x) / n
-    srednia_y = sum(y) / n
-
-    licznik = sum((x[i] - srednia_x) * (y[i] - srednia_y) for i in range(n))
-    mianownik = sum((x[i] - srednia_x) ** 2 for i in range(n))
-
-    a = licznik / mianownik
-    b = srednia_y - a * srednia_x
-
-    return a, b

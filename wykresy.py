@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import altair as alt
-import numpy as np
 
 def rysuj_matplotlib(df):
     fig, ax = plt.subplots()
@@ -33,28 +32,18 @@ def rysuj_seaborn(df):
 
 
 def rysuj_plotly(df):
-    x = list(df['otwarcie'])
-    y = list(df['zamkniecie'])
-
-    n = len(x)
-    sx = sum(x) / n
-    sy = sum(y) / n
-
-    a = sum((x[i] - sx)*(y[i] - sy) for i in range(n)) / sum((x[i] - sx)**2 for i in range(n))
-    b = sy - a*sx
-
-    fig = px.scatter(df, x='otwarcie', y='zamkniecie')
-
-    x_lin = np.linspace(min(x), max(x), 100)
-    y_lin = a * x_lin + b
-
-    fig.add_scatter(x=x_lin, y=y_lin, mode='lines', name='Trend', line=dict(color='red'))
-
+    fig = px.scatter(
+        df,
+        x='otwarcie',
+        y='zamkniecie',
+        title="Zależność: Otwarcie vs Zamknięcie"
+    )
     return fig
 
 
 def rysuj_altair(df):
     return alt.Chart(df).mark_bar().encode(
-        x=alt.X('dzien', sort=None),
-        y='wolumen'
+        x=alt.X('dzien', sort=None, title="Dzień tygodnia"),
+        y=alt.Y('wolumen', title="Średni wolumen"),
+        tooltip=['dzien', 'wolumen']
     )
