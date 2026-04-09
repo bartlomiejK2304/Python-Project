@@ -20,9 +20,15 @@ def rysuj_seaborn(df):
     sns.heatmap(
         korelacja,
         annot=True,
-        cmap='Blues',
+        cmap='RdBu_r',
+        center=0,
+        linewidths=1,
+        linecolor='black',
+        fmt=".2f",
         ax=ax
     )
+
+    ax.set_title("Macierz korelacji")
     return fig
 
 

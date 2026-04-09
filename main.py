@@ -13,12 +13,9 @@ from wykresy import (
 
 
 def main():
-    st.title("Projekt z Pythona - Analiza Rynku Giełdowego")
+    st.title("Analiza rynku BTC – eksploracja danych i zależności")
 
-    st.header("1. Wstęp")
-    st.write("Analiza ceny Bitcoina (BTC) z ostatnich 100 dni.")
-
-    st.header("2. Dane")
+    st.header("1. Dane")
 
     surowe_dane = pobierz_dane()
     generator = moj_generator(surowe_dane)
@@ -27,15 +24,15 @@ def main():
     lista_danych = list(zmapowane)
 
     df = pd.DataFrame(lista_danych)
-    df.index = df.index + 1  
+    df.index = df.index + 1
 
     st.dataframe(df)
 
-    st.header("3. Statystyki")
+    st.header("2. Statystyki")
 
+    st.write(f"Średnia: {df['zamkniecie'].mean():.2f} USD")
     st.write(f"Mediana: {df['zamkniecie'].median():.2f} USD")
     st.write(f"Odchylenie: {df['zamkniecie'].std():.2f} USD")
-    st.write(f"Średnia: {df['zamkniecie'].mean():.2f} USD")
     st.write(f"Min: {df['zamkniecie'].min():.2f} USD")
     st.write(f"Max: {df['zamkniecie'].max():.2f} USD")
 
@@ -51,27 +48,36 @@ def main():
     suma = suma_wolumenow([x['wolumen'] for x in lista_danych])
     st.write(f"Całkowity wolumen: {suma:.2f}")
 
-    st.write("Macierz korelacji:")
-    st.dataframe(df[['otwarcie', 'zamkniecie', 'wolumen']].corr())
-
-    st.header("4. Wykresy")
+    st.header("3. Wykresy")
 
     st.subheader("Cena w czasie")
     st.pyplot(rysuj_matplotlib(df))
-    st.write("Trend spadkowy, potem stabilizacja rynku.")
+    st.write("""
+    Widoczny jest silny ruch spadkowy, po którym następuje stabilizacja rynku.
+    Oznacza to przejście z trendu w konsolidację.
+    """)
 
     st.subheader("Korelacja")
     st.pyplot(rysuj_seaborn(df))
-    st.write("Otwarcie i zamknięcie są silnie powiązane.")
+    st.write("""
+    Bardzo silna zależność między ceną otwarcia i zamknięcia (~0.98).
+    Wolumen ma słabszy wpływ na cenę.
+    """)
 
     st.subheader("Otwarcie vs Zamknięcie")
     st.plotly_chart(rysuj_plotly(df))
-    st.write("Silna zależność liniowa między cenami.")
+    st.write("""
+    Punkty tworzą niemal linię prostą – silna zależność liniowa.
+    Rynek jest stabilny w krótkim okresie.
+    """)
 
     st.subheader("Wolumen wg dni tygodnia")
     df_grup = grupuj_pandas(df)
     st.altair_chart(rysuj_altair(df_grup))
-    st.write("Największa aktywność w środku tygodnia.")
+    st.write("""
+    Największa aktywność przypada na dni robocze.
+    Weekend charakteryzuje się niższym wolumenem.
+    """)
 
 
 if __name__ == "__main__":
