@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 def pobierz_dane():
     url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=100"
@@ -66,9 +67,11 @@ def grupuj_pandas(df):
     return wynik
 
 
-def oblicz_mediane(df, kolumna):
-    return df[kolumna].median()
+def regresja_sklearn(df):
+    X = df[['otwarcie']].values
+    y = df['zamkniecie'].values
 
+    model = LinearRegression()
+    model.fit(X, y)
 
-def oblicz_odchylenie(df, kolumna):
-    return df[kolumna].std()
+    return model
