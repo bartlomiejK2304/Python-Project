@@ -21,7 +21,7 @@ def main():
     st.title("Projekt zaliczeniowy: Analiza rynku kryptowalut na przykładzie kursu Bitcoin (BTC/USDT) z ostatnich 100 dni")
 
     st.header("1. Wstęp i omówienie danych")
-    st.write("Celem projektu jest praktyczne wykorzystanie paradygmatu funkcyjnego w Pythonie do pobrania, przetworzenia i wizualizacji rzeczywistych danych. Analizujemy zachowanie najpopularniejszej kryptowaluty – Bitcoina – pobierając dane z publicznego API giełdy Binance.")
+    st.write("Celem projektu jest praktyczne wykorzystanie paradygmatu funkcyjnego w Pythonie do pobrania, przetworzenia i wizualizacji rzeczywistych danych. Analizujemy zachowanie Bitcoina na podstawie danych z API Binance.")
 
     surowe_dane = pobierz_dane()
     generator = moj_generator(surowe_dane)
@@ -51,45 +51,48 @@ def main():
     dni_wzrostowe = list(filter(lambda x: x['zmiana_ceny'] > 0, lista_danych))
     dni_spadkowe = list(filter(lambda x: x['zmiana_ceny'] <= 0, lista_danych))
 
-    st.write(f"**Analiza zachowania ceny:** Przez badane 100 dni rynek rósł w **{len(dni_wzrostowe)}** dni, a spadał w **{len(dni_spadkowe)}** dni.")
+    st.write(f"**Analiza zachowania ceny:** {len(dni_wzrostowe)} dni wzrostowych i {len(dni_spadkowe)} spadkowych.")
 
     najwiekszy = reduce(
         lambda a, b: a if a['wolumen'] > b['wolumen'] else b,
         lista_danych
     )
-    st.write(f"**Największy jednodniowy wolumen (reduce):** {najwiekszy['wolumen']:.2f} BTC")
+    st.write(f"**Największy wolumen:** {najwiekszy['wolumen']:.2f} BTC")
 
     suma = suma_rekurencyjna([x['wolumen'] for x in lista_danych])
-    st.write(f"**Całkowity wolumen (rekurencja):** {suma:.2f} BTC")
+    st.write(f"**Całkowity wolumen:** {suma:.2f} BTC")
 
     st.header("3. Analiza graficzna i wnioski")
 
-   
+    # 1️⃣ mniejszy
     st.subheader("3.1. Zmiana ceny w czasie (Matplotlib)")
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
         st.pyplot(rysuj_matplotlib(df))
     st.info("Widoczny trend spadkowy, a następnie stabilizacja rynku (konsolidacja).")
 
-    
+    # 2️⃣ mniejszy
     st.subheader("3.2. Macierz korelacji (Seaborn)")
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
         st.pyplot(rysuj_seaborn(df))
-    st.info("Bardzo silna korelacja między ceną otwarcia i zamknięcia (~0.98). Wolumen ma słabszy wpływ.")
+    st.info("Silna korelacja między ceną otwarcia i zamknięcia (~0.98).")
 
+    # 3️⃣ mniejszy
     st.subheader("3.3. Otwarcie vs Zamknięcie (Plotly)")
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
         st.plotly_chart(rysuj_plotly(df), use_container_width=False)
     st.info("Silna zależność liniowa – punkty układają się wzdłuż prostej.")
 
-  
+    # 🔥 4️⃣ SZERSZY
     st.subheader("3.4. Wolumen wg dni tygodnia (Altair)")
     df_grup = grupuj_pandas(df)
-    col1, col2, col3 = st.columns([1, 2, 1])
+
+    col1, col2, col3 = st.columns([1, 5, 1])
     with col2:
-        st.altair_chart(rysuj_altair(df_grup), use_container_width=False)
+        st.altair_chart(rysuj_altair(df_grup), use_container_width=True)
+
     st.info("Największa aktywność w dni robocze, niższa w weekendy.")
 
 
