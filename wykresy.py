@@ -40,12 +40,7 @@ def rysuj_plotly(df):
     model = LinearRegression()
     model.fit(X, y)
 
-    fig = px.scatter(
-        df,
-        x='otwarcie',
-        y='zamkniecie',
-        title="Otwarcie vs Zamknięcie + regresja"
-    )
+    fig = px.scatter(df, x='otwarcie', y='zamkniecie')
 
     x_lin = np.linspace(min(X), max(X), 100).reshape(-1, 1)
     y_lin = model.predict(x_lin)
@@ -63,7 +58,6 @@ def rysuj_plotly(df):
 
 def rysuj_altair(df):
     return alt.Chart(df).mark_bar().encode(
-        x=alt.X('dzien', sort=None, title="Dzień tygodnia"),
-        y=alt.Y('wolumen', title="Średni wolumen"),
-        tooltip=['dzien', 'wolumen']
+        x=alt.X('dzien', sort=None),
+        y='wolumen'
     )
