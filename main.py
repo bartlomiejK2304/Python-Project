@@ -15,11 +15,13 @@ def main():
     """
     Główna funkcja aplikacji integrująca interfejs Streamlit.
     """
-    st.set_page_config(layout="wide") # Szerszy widok dla lepszej czytelnosci
-    st.title("Analiza rynku BTC – eksploracja danych i zależności")
+    st.set_page_config(layout="wide") 
+    
+    # SPRECYZOWANY TYTUŁ
+    st.title("Projekt zaliczeniowy: Analiza rynku kryptowalut na przykładzie kursu Bitcoin (BTC/USDT) z ostatnich 100 dni")
 
-    st.header("1. Dane")
-    st.write("Na podstawie danych z API giełdy Binance badamy zachowanie Bitcoina z ostatnich 100 dni.")
+    st.header("1. Wstęp i omówienie danych")
+    st.write("Celem projektu jest praktyczne wykorzystanie paradygmatu funkcyjnego w Pythonie do pobrania, przetworzenia i wizualizacji rzeczywistych danych. Analizujemy zachowanie najpopularniejszej kryptowaluty – Bitcoina – pobierając dane z publicznego API giełdy Binance.")
 
     surowe_dane = pobierz_dane()
     generator = moj_generator(surowe_dane)
@@ -34,7 +36,6 @@ def main():
 
     st.header("2. Statystyki i wyliczenia funkcyjne")
     
-    # Ladne kolumny w Streamlit do pokazania statystyk
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Średnia cena", f"{df['zamkniecie'].mean():.2f} USD")
@@ -47,46 +48,43 @@ def main():
 
     st.write("---")
     
-    # Nowa funkcja analizujaca dni na plusie i minusie (uzycie filter i lambda)
     dni_wzrostowe = list(filter(lambda x: x['zmiana_ceny'] > 0, lista_danych))
     dni_spadkowe = list(filter(lambda x: x['zmiana_ceny'] <= 0, lista_danych))
     
     st.write(f"**Analiza zachowania ceny:** Przez badane 100 dni rynek rósł w **{len(dni_wzrostowe)}** dni, a spadał w **{len(dni_spadkowe)}** dni.")
 
-    # Wykorzystanie reduce
     najwiekszy = reduce(
         lambda a, b: a if a['wolumen'] > b['wolumen'] else b,
         lista_danych
     )
-    st.write(f"**Największy jednodniowy wolumen (Reduce):** {najwiekszy['wolumen']:.2f} sztuk")
+    st.write(f"**Największy jednodniowy wolumen (obliczony funkcją reduce):** {najwiekszy['wolumen']:.2f} sztuk BTC")
 
-    # Wykorzystanie rekurencji
     suma = suma_rekurencyjna([x['wolumen'] for x in lista_danych])
-    st.write(f"**Całkowity wolumen w badanym okresie (Rekurencja):** {suma:.2f} sztuk")
+    st.write(f"**Całkowity wolumen w badanym okresie (obliczony rekurencją):** {suma:.2f} sztuk BTC")
 
-    st.header("3. Wykresy i Wnioski")
+    st.header("3. Analiza graficzna i Wnioski")
+    st.write("W poniższej sekcji prezentujemy cztery różne wykresy. Każdy z nich został wygenerowany za pomocą innej biblioteki i służy do zbadania innych właściwości naszego zbioru danych.")
 
-    # Dzielimy ekran na dwie czesci, zeby wykresy ladniej wygladaly
-    wykres_col1, wykres_col2 = st.columns(2)
+    # Wykres 1
+    st.subheader("3.1. Zmiana ceny w czasie (Matplotlib)")
+    st.pyplot(rysuj_matplotlib(df))
+    st.info("Wykres liniowy przedstawia, jak kształtowała się cena zamknięcia Bitcoina na przestrzeni badanych 100 dni. Pozwala to łatwo zaobserwować główne trendy rynkowe – okresy dynamicznych wzrostów oraz korekt i spadków. Dzięki temu zyskujemy ogólny pogląd na kondycję rynku i widzimy, w jakich datach przypadały lokalne maksima i minima cenowe.")
 
-    with wykres_col1:
-        st.subheader("Cena w czasie (Matplotlib)")
-        st.pyplot(rysuj_matplotlib(df))
-        st.info("Widoczny jest ogólny trend rynkowy w badanym okresie. Wykres pozwala nam określić, czy rynek znajduje się w fazie wzrostów czy spadków.")
+    # Wykres 2
+    st.subheader("3.2. Macierz korelacji zmiennych (Seaborn)")
+    st.pyplot(rysuj_seaborn(df))
+    st.info("Macierz korelacji pozwala nam zbadać siłę powiązań między różnymi wskaźnikami liczbowymi. Wartość bliska 1.0 (ciemnoczerwona) oznacza bardzo silną zależność dodatnią – widzimy tu, że cena otwarcia i zamknięcia danego dnia idą niemal idealnie w parze. Z kolei korelacja wolumenu z ceną jest lekko ujemna (kolor jasnoniebieski), co sugeruje, że przy wyższych cenach aktywność handlowa w tym okresie była nieco mniejsza (lub przy spadkach inwestorzy chętniej sprzedawali).")
 
-        st.subheader("Otwarcie vs Zamknięcie (Plotly)")
-        st.plotly_chart(rysuj_plotly(df), use_container_width=True)
-        st.info("Punkty tworzą niemal linię prostą – silna zależność liniowa. Kolor zielony oznacza dzień zakończony na plusie.")
+    # Wykres 3
+    st.subheader("3.3. Zależność: Otwarcie vs Zamknięcie (Plotly)")
+    st.plotly_chart(rysuj_plotly(df), use_container_width=True)
+    st.info("Ten interaktywny wykres punktowy szczegółowo obrazuje relację między ceną otwarcia a zamknięcia dla każdego pojedynczego dnia. Punkty ułożyły się wzdłuż przekątnej, co wizualnie potwierdza naszą silną korelację z poprzedniego wykresu. Dodatkowo zastosowaliśmy formatowanie warunkowe: zielone kropki to dni wzrostowe (cena zamknięcia wyższa niż otwarcia), a czerwone to dni spadkowe. Dzięki temu łatwo zidentyfikować dni o nietypowo dużej zmienności, czyli te punkty, które najmocniej odstają od głównej, ukośnej linii.")
 
-    with wykres_col2:
-        st.subheader("Korelacja (Seaborn)")
-        st.pyplot(rysuj_seaborn(df))
-        st.info("Bardzo silna zależność między ceną otwarcia i zamknięcia (~0.98). Wolumen ma znacznie słabszy (ujemny) wpływ na cenę.")
-
-        st.subheader("Wolumen wg dni tygodnia (Altair)")
-        df_grup = grupuj_pandas(df)
-        st.altair_chart(rysuj_altair(df_grup), use_container_width=True)
-        st.info("Największa aktywność przypada zazwyczaj na dni robocze. Wynika to z faktu, że w weekendy inwestorzy rzadziej zawierają transakcje.")
+    # Wykres 4
+    st.subheader("3.4. Aktywność rynku w dniach tygodnia (Altair)")
+    df_grup = grupuj_pandas(df)
+    st.altair_chart(rysuj_altair(df_grup), use_container_width=True)
+    st.info("Wykres słupkowy ukazuje średni wolumen obrotu z podziałem na konkretne dni tygodnia. Aby go uzyskać, wykorzystaliśmy wbudowany w bibliotekę Pandas paradygmat split-apply-combine (pogrupowanie danych po dniu, wyliczenie średniej i ponowne złączenie). Bardzo często można tu zauważyć prawidłowość polegającą na tym, że w weekendy (sobota, niedziela) obrót nieco spada, co wynika z mniejszego zaangażowania inwestorów instytucjonalnych w dni wolne od pracy.")
 
 if __name__ == "__main__":
     main()
